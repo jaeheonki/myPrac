@@ -1,0 +1,14 @@
+{
+    "name" : "test-scripts",
+    "version" : "1.0.0",
+    "scripts":{
+        "prehello" : "echo 'prehello'",
+        "hello" : "echo 'hello'",
+        "posthello" : "echo 'posthello'",
+        "test" : "echo 'test'",
+        "stop" : "echo 'stop'",
+        "start" : "echo 'start'",
+        "restart" : "echo 'restart'"
+    }
+
+}
