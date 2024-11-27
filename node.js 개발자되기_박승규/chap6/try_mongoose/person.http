@@ -1,0 +1,38 @@
+//VSCode의 REST클라이언트를 사용해 mongoose crud.js 테스트
+// http파일로 코드 작성, 코드가 남아 있게 되어 재사용에 용이하다
+
+//파일 하나에 하나 이상의 테스트 요청을 작성할 수 있고 각 요청은 3개 이상의 #으로 구분
+
+// 명령어와 변수 사이에는 띄어쓰기 무조건 있어야함 ! 
+//@변수명 = 값으로 변수 선언, 변수 사용 : {{변수명}}
+#// (1) 서버 변수 설정
+@server = http://localhost:3000
+
+###// (2) host:3000에 GET 요청
+GET {{server}}/person
+
+###// (3) POST 요청
+POST {{server}}/person
+Content-Type : application/json
+//헤더 정보 다음에 바디가 있는 경우 반드시 둘 사이에 빈 줄이 들어가야 한다
+//본인의 인적사항 POST 요청(json)타입 : 
+
+{
+    "name" : "JaeHeon Kim",
+    "age" : 25,
+    "email" : "uj07096@naver.com"
+}
+
+###//(4) 생성한 문서 확인
+GET {{server}}/person/uj07096@naver.com 
+
+###//(5) PUT 요청 , 문서 수정
+PUT {{server}}/person/uj07096@naver.com
+Content-Type: application/json
+
+{
+    "age" : 24
+}
+
+###//(6) 문서 삭제
+DELETE {{server}}/person/uj07096@naver.com
