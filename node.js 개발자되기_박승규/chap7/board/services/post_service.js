@@ -12,7 +12,7 @@ const projectionOption = {
 //하나의 게시물 정보를 가져오는 함수
 async function getDetailPost(collection, id){                                  
     //findOneAndUpdate(filter, update, options) : filter : 원하는 데이터, update : 찾은 도큐먼트에 갱신할 데이터에 대한 내용, options : 프로젝션, 소팅 등                     
-    return await collection.findOneAndUpdate({ _id: ObjectId(id) }, { $inc: { hits: 1 } }, projectionOption); //가져올때마다 hits(조회수) 를 1씩 증가시킨다 $inc : increase, his를 1씩 증가시킨다
+    return await collection.findOneAndUpdate({ _id: ObjectId(id) }, { $inc: { hits: 1 } }, projectionOption); //가져올때마다 hits(조회수) 를 1씩 증가시킨다 $inc : increase, hits를 1씩 증가시킨다
 }
 
 //글 목록
@@ -35,10 +35,32 @@ async function writePost(collection, post){                                     
     return await collection.insertOne(post);                                                        //컬렉션에 post 저장, 결괏값 : Promise
 }
 
+async function getPostByIdAndPassword(collection, { id, password }) {                               //몽고디비 collection의 findOne함수 사용
+    return await collection.findOne({ _id: ObjectId(id), password : password }, projectionOption);  //findOne(filter, option) : 여기서 filter는 id + password
+                                                                                                    //패스워드가 입력값과 일치하면 post객체 반환
+}
+
+async function getPostById(collection, id) {                                                        //위의 함수와 같음, 매개변수로 id만 받음 : 수정 페이지 이동 api에서 사용
+                                                                                                    
+    return await collection.findOne({ _id: ObjectId(id)}, projectionOption);  
+                                                                                                    
+}
+
+async function updatePost(collection, id, post) {                                                   //게시글 업데이트
+    const toUpdatePost = {
+        $set: {
+            ...post,
+        }
+    };
+    return await collection.updateOne({ _id: ObjectId(id) }, toUpdatePost);
+}
 
 
 module.exports = {                                                                                  //module.exports : require()로 파일을 임포트할때 외부로 노출하는 객체를 모아둔다
     list,
     writePost,
     getDetailPost,
+    getPostByIdAndPassword,
+    getPostById,
+    updatePost,
 };

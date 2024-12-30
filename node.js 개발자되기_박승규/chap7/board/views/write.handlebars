@@ -1,27 +1,32 @@
 {{!-- 글쓰기 페이지 작성하기 --}}
-<h1>[{{title}}]글 작성</h1>
+<h1>[{{title}}] 글 {{#if (eq mode "create")}}작성{{else}}수정{{/if}}</h1>               {{!mode에 따라 문구 변경}}
 <div>
     {{!-- (1)글쓰기 폼 --}}
-    <form name = "boardForm" method = "post" action = "/write">   {{! 글 작성 form의 name 지정(다른 곳에서 찾을 수 있도록), url이 write인 핸들러 함수 필요(추후 작성)}}
+    <form name = "boardForm" method = "post"  {{#if (eq mode "create")}}                {{! 글 작성 form의 name 지정(다른 곳에서 찾을 수 있도록)}}
+    action="/write" {{else}}action="/modify" {{/if}}>                                    {{!mode에 따라 폼이 반영되는 URL 반영}}
+
+    {{#if (eq mode "modify")}}
+    <input type = "hidden" name = "id" value = "{{post._id}}"   />
+    {{/if}}
         {{!-- (2) 제목 입력 --}}
         <div>
             <label>제목</label>
-            <input type = "text" name = "title" placeholder = "제목" value = ""/>
+            <input type = "text" name = "title" placeholder = "제목" value = "{{post.title}}"/> {{!수정모드일 경우 제목을 넣어준다}}
         </div>
         {{!-- (3) 이름 입력 --}}
         <div>
             <label>이름</label>
-            <input type = "text" name = "writer" placeholder = "이름" value = ""/>
+            <input type = "text" name = "writer" placeholder = "이름" value = "{{post.writer}}"/> {{!수정모드일 경우 이름을 넣어준다}}
         </div>
         {{!-- (4) 비밀번호 입력 --}}
         <div>
             <label>비밀번호</label>
-            <input type = "password" name = "password" placeholder = "비밀번호" value = ""/>
+            <input type = "password" name = "password" placeholder = "비밀번호 입력"/>
         </div>
         {{!-- (5) 본문 입력 --}}
         <div>
             <label>본문을 입력해주세요</label><br/>
-            <textarea placeholder="본문" name = "content" cols = "50" rows = "10"></textarea>
+            <textarea placeholder="본문" name = "content" cols = "50" rows = "10">{{post.content}}</textarea> {{!수정모드인 경우 본문에 내용을 채워준다}}
             <br/>
         </div>
         {{!-- (6) 버튼 영역 --}}

@@ -9,6 +9,7 @@ const postService = require("./services/post_service");                     // �
 
 //몽고디비 연결 함수
 const mongodbConnection = require("./configs/mongodb_connection");          //본문 코드에 콜백이 없으므로 콜백 없이 MongoClient 객체 반환
+const { ObjectId } = require("mongodb");
 
 app.engine("handlebars",                                                    //익스프레스에서 사용할 템플릿 엔진 등록
     handlebars.create({                                                     //handlebars 객체 생성, 옵션으로 handlebars_helpers에 있는 헬퍼 함수 추가
@@ -40,9 +41,6 @@ app.get("/", async (req, res) => {
         res.render("home", { title : "테스트 게시판"});
     }
 });
-app.get("/write", (req, res) => {
-    res.render("write", { title: "테스트 게시판" });
-});
 
 //글쓰기 섹션
 app.post("/write", async (req, res) => {
@@ -51,6 +49,53 @@ app.post("/write", async (req, res) => {
     res.redirect(`/detail/${result.insertedId}`);                           //저장 결과에 식별자로 사용할 수 있는 insertedID 값을 사용해 상세페이지로 이동
 });
 
+//쓰기 페이지 이동 : mode : create
+app.get("/write", (req, res) => {           
+    res.render("write", { title: "테스트 게시판", mode: "create"});         //mode 변수 추가, create/modify
+})
+
+//수정 페이지 이동 : mode : modify
+app.get("/modify/:id", async (req, res) => {
+    const post = await postService.getPostById(collection, req.params.id);  //post_service.js에 있는 getPostbyId함수 사용
+    console.log(post);
+    res.render("write", { title : "테스트 게시판 ", mode: "modify", post });
+});
+
+//게시글 수정 api
+app.post("/modify/", async (req, res) => {                                  ///modify/url로 POST요청이 오는 경우 실행
+    const { id, title, writer, password, content } = req.body;
+
+    const post = {
+        title,
+        writer,
+        password,
+        content,
+        createdDt: new Date().toISOString(),
+    };
+
+    const result = postService.updatePost(collection, id, post);                //게시글 수정 결과 반환, 수정이 된다면 상세페이지로 redirect
+    res.redirect(`/detail/${id}`);
+});
+
+//게시글 삭제 api
+app.delete("/delete", async (req, res) => {
+    const { id, password } = req.body;
+
+    try{
+        const result = await collection.deleteOne({ _id: ObjectId(id), password: password });   //collection의 deleteOne()함수 사용, 게시글 하나 삭제
+    
+        console.log("Deletion result:", result)
+
+        if (result.deletedCount !== 1){                                                         //deleteOne()의 결과는 DeleteResult, 삭제 성공이면 deletedCount 값이 1
+            console.log("삭제 실패");
+            return res.json({ isSuccess: false });                                              //1이 아니면 실패했다는 뜻이므로 isSuccess: false
+        }
+        return res.json({ isSuccess: true });
+    } catch(error){                                                                             //네트워크 오류 등 예외 상황 위해 try catch로 예외처리
+        console.error(error);
+        return res.json({ isSuccess: false });
+    }
+});
 //상세페이지로 이동
 app.get("/detail/:id", async (req, res) => {
     const result = await postService.getDetailPost(collection, req.params.id);  //id정보를 넘겨서 몽고디비의 게시글 데이터를 가져오기
@@ -64,7 +109,7 @@ app.get("/detail/:id", async (req, res) => {
 app.post("/check_password", async (req, res) => {                               //post 요청 : req.body에서 id, password 데이터를 구조 분해 할당으로 각각 가져옴
     const{ id, password } = req.body;
 
-    const post = await postService.getPostByIdAndPassWord(collection, { id, password });    // post_service.js에 있는 getPostByIdAndPassWord 함수 불러오기 -> 게시글 데이터 확인
+    const post = await postService.getPostByIdAndPassword(collection, { id, password });    // post_service.js에 있는 getPostByIdAndPassWord 함수 불러오기 -> 게시글 데이터 확인
 
     if (!post) {                                                                 //데이터가 있으면 isExist true, 없으면 isExist False
         return res.status(404).json({ isExist : false});
