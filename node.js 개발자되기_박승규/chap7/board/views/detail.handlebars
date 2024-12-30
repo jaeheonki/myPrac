@@ -18,10 +18,11 @@
 
 <section>
     <div>
-        <h3>n개의 댓글이 있습니다. </h3>                                                          {{!댓글 개수 표시 영역}}
+        <h3>{{lengthOfList comments}}개의 댓글이 있습니다. </h3>                                                          {{!댓글 개수 표시 영역, LengthOfList 커스텀 헬퍼 사용용}}
     </div>
 
-    <form method = "post" action="/write-comment">                                              {{!댓글 작성 폼}}
+    <form method = "post" action="/write_comment">                                              {{!댓글 작성 폼, write-comment api 호출}}
+        <input type = "hidden" name = "id" value = "{{_id}}" />
         <div>
             <div>
                 <input type = "text" name = "name" placeholder = "이름"/>
@@ -29,26 +30,27 @@
             </div>
             <div>
                 <textarea cols = "40" rows = "3" name = "comment" placeholder="댓글을 입력해주세요."></textarea>
-                {{!댓글 전송 버튼}}
-                <br /><br /><button>댓글쓰기</button> 
+                <br /><br /><button>댓글쓰기</button>                                               {{!댓글 전송 버튼}}
             </div>
         </div>
     </form>
 </section>
 {{! 댓글 표시 영역}}
 <section>
+    {{#each comments}}
     <div>
         <div>
-            작성자 : <b>댓글 작성자</b>
+            작성자 : <b>{{name}}</b>
         </div>
         <div>
-            작성일시 : 2024-12-03 00:00:00
-            <button onclick="deleteComment('1')">삭제</button>
-        </div>
-        <div>
-            <pre>{{comment}}</pre>
+            작성일시 : {{dateString createdDt}}
+            <button onclick="deleteComment('{{idx}}')">삭제</button>
         </div>
     </div>
+    <div>
+        <pre>{{comment}}</pre>
+    </div>
+    {{/each}}
 </section>
 {{/with}}
 
@@ -115,4 +117,27 @@
 
         document.location = "/";                                        //성공하면 리스트 페이지로 이동
        }
+</script>
+
+<script>
+    async function deleteComment(idx) {
+        const password = prompt("삭제하려면 패스워드를 입력해주세요");
+        if (!password) {                                                        //프롬프트에서 취소를 누른 경우 처리
+            return;
+        }
+
+    const result = await fetch("/delete_comment", {                             //fetch로 AJAX 통신신
+        ...deleteOption,
+        body: JSON.stringify({ id: "{{post._id}}", idx, password })
+    });
+
+    const data = await result.json();                                           //서버에서 실행에 대한 응답을 JSON형식으로 내려줌 : boolean 타입
+    if(!data.isSuccess) {
+        alert("삭제 실패, 패스워드를 확인해주세요.");
+        return;
+    }
+
+    alert("삭제 성공! ");
+    document.location.reload();
+    }
 </script>

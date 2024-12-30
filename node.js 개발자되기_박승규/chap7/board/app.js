@@ -96,6 +96,56 @@ app.delete("/delete", async (req, res) => {
         return res.json({ isSuccess: false });
     }
 });
+
+//댓글 추가 api
+app.post("/write_comment", async (req, res) =>{
+    const { id, name, password, comment } = req.body;                                           //body에서 데이터 가져오기
+    const post = await postService.getPostById(collection, id);                                 //댓글은 게시글의 필드에 추가, 따라서 id를 가지고 글의 정보를 가져온다.
+
+    if(post.comments) {                                                                         //게시글에 기존 댓글 리스트가 있으면 추가
+        post.comments.push({                                                                    //리스트 가장 뒤에 요소 추가 위해 push 사용
+            idx: post.comments.length + 1,                                                      //인덱스는 리스트 길이에 + 1
+            name,
+            password,
+            comment,
+            createdDt: new Date().toISOString(),
+        });
+    }else {
+        post.comments = [                                                                       // 댓글이 없다면 리스트 추가, 초기 댓글 인덱스 1로 하여 정보 넣어주기
+            {
+            idx: 1,
+            name,
+            password,
+            comment,
+            createdDt: new Date().toISOString(),
+            },
+        ];
+    }
+    console.log("Initial post.comments:", post.comments);   
+    postService.updatePost(collection, id, post);                                               //updatePost 재사용 하여 업데이트
+    return res.redirect(`/detail/${id}`);
+});
+
+//댓글 삭제 api
+app.delete("/delete_comment", async(req, res) =>{
+    const {id, idx, password } = req.body;
+
+    const post = await collection.findOne(
+        {
+            _id: ObjectId(id),
+            comments: { $elemMatch: { idx: parseInt(idx), password } },         //$elemMatch 연산자 : 도큐먼트 안에 있는 리스트에서 조건에 해당하는 데이터가 있으면 도큐먼트를 결과값으로 주는 연산자
+        },
+        postService.projectionOption,
+    );
+
+    if (!post){                                                                 //데이터가 없는 경우 isSucces: false 반환, return으로 종료
+        return res.json({isSuccess: false });
+    }
+
+    post.comments = post.comments.filter((comment) => comment.idx != idx);      //데이터가 있는 경우 댓글 리스트에서 idx 데이터만 제외하고 다시 post.comments에 저장 -> 이후 변경된 post 데이터 업데이터터
+    postService.updatePost(collection, id, post);
+    return res.json({ isSuccess: true });
+});
 //상세페이지로 이동
 app.get("/detail/:id", async (req, res) => {
     const result = await postService.getDetailPost(collection, req.params.id);  //id정보를 넘겨서 몽고디비의 게시글 데이터를 가져오기
