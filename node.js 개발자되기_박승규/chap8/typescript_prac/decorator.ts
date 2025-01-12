@@ -25,3 +25,33 @@ class Decoratortest {
 }
 
 const decoTest = new Decoratortest();
+
+//메소드의 시간을 측정하는 코드
+console.time("실행 시간");                      //실행시간 측정 시작
+execute();                                     //setTimeout()을 이용해 0.5초가 걸리도록
+function execute() {
+    setTimeout(() => {
+        console.log("실행");
+        console.timeEnd("실행 시간");           //실행 시간 측정 종료
+    }, 500);
+}
+
+//위의 시간 측정 코드를 메서드 데코레이터로
+function Timer(){       //데코레이터 팩토리 함수 : 데코레이터를 만들어서 반환하는 함수
+    return function (target : any, key: string, descriptor: PropertyDescriptor){    //메소드 데코레이터 선언 : 결괏값으로 익명 함수를 반환
+        const originalMethod = descriptor.value;                                    //decriptor.value에는 기존 메소드가 값으로 되어 있다(함수도 값으로 할당 가능)
+        descriptor.value = function (...args: any[]){                               //메소드의 동작을 변경함 -> 시간 측정 동작 추가
+            console.time(`Elapsed time`);                                           
+            const result = originalMethod.apply(this, args);                        //this : 데코레이터가 적용된 클래스의 인스턴스스
+            console.timeEnd(`Elapsed time`);
+            return result;
+        };
+    }
+}
+
+class ElapsedTime {
+    @Timer()
+    hello(){
+        console.log(`Hello`);
+    }
+}
