@@ -14,3 +14,14 @@ NestJS의 네이밍 규칙 :
 1) 파일명은 .으로 연결하고, 모듈이 둘 이상의 단어로 구성되어 있으면 대시로 연결
 2) 클래스명은 낙타 표기법(단어 전체적으로 소문자를 사용하지만, 맨 첫 글자를 제외한 각 합성어의 첫 글자만 대문자로 표기)
 3) 같은 디렉토리에 있는 클래스는 index.ts를 통해서 임포트
+
+
+NestJS에는 수많은 컴포넌트가 있는데, 그중 컨트롤러는 유저가 보낸 HTTP 요청을 어떤 코드에서 처리할 지 정하는 역할을 한다
+익스프레스에서 개발할 때에는 개발자가 임의로 컨트롤러, 서비스, 데이터 연결 등의 계층을 정해서 개발을 했으나, NESTJS에서 컨트롤러는 <모듈명>.controller.ts라는 파일로 만듬
+
+책에서 만드는 블로그 api 스펙 -> BlogController의 메소드 
+1) GET /blog (글 목록 가져오기) ->  @Get() getAllPosts()
+2) POST /blog(게시글 새로 쓰기) ->  @Post() createPost()
+3) GET /blog/:id (게시글 아이디가 id인 글 불러오기) -> @Get('/:id') getPost()
+4) DELETE /blog/:id (게시글 아이디가 id인 글 삭제하기) -> @Delete('/:id') deletePost()
+5) PUT /blog/:id(게시글 업데이트하기) ->    @Put('/:id') updatePost()
