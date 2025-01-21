@@ -22,7 +22,11 @@ export class BlogService {
         return post;
     }
 
-    updatePost(id, postDto: PostDto) {
+    delete(id){
+        const filteredPosts = this.posts.filter((post) => post.id !== id);
+        this.posts = [...filteredPosts];
+    }
+    updatePost(id, postDto: PostDto){
         let updateIndex = this.posts.findIndex((post) => post.id === id);
         const updatePost = { id, ...postDto, updatedDt: new Date() };
         this.posts[updateIndex] = updatePost;
